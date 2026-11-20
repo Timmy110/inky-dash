@@ -1,0 +1,28 @@
+# Installed by scripts/install.sh (@USER@ is replaced with the install user).
+[Unit]
+Description=inky-dash e-paper dashboard
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=@USER@
+Group=@USER@
+SupplementaryGroups=gpio spi i2c
+WorkingDirectory=/opt/inky-dash
+Environment=INKYDASH_CONFIG=/etc/inky-dash/config.json
+Environment=INKYDASH_STATE=/var/lib/inky-dash
+Environment=PYTHONUNBUFFERED=1
+StateDirectory=inky-dash
+ExecStart=/opt/inky-dash/.venv/bin/inky-dash run --driver inky
+Restart=always
+RestartSec=10
+# The main loop pings at least every 60 s; a hung refresh or network call gets restarted.
+WatchdogSec=300
+TimeoutStartSec=180
+TimeoutStopSec=90
+MemoryMax=300M
+
+[Install]
+WantedBy=multi-user.target

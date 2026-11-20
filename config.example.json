@@ -1,0 +1,246 @@
+{
+  "$schema": "./schema/config.schema.json",
+  "timezone": "Europe/Brussels",
+  "display": {
+    "orientation": "landscape",
+    "flip": false,
+    "refresh_speed": "normal",
+    "min_refresh_interval": "3m"
+  },
+  "locale": {
+    "language": "en",
+    "units": "metric",
+    "time_format": "24h"
+  },
+  "holidays": {
+    "country": "BE"
+  },
+  "off_days": [],
+  "locations": {
+    "home": {
+      "lat": 50.85,
+      "lon": 4.35,
+      "label": "Home"
+    },
+    "work": {
+      "address": "Korenmarkt, Gent",
+      "label": "Office"
+    }
+  },
+  "providers": {
+    "routing": {
+      "car": [
+        "tomtom",
+        "here",
+        "mapbox",
+        "google",
+        "osrm"
+      ],
+      "bike": [
+        "osrm"
+      ],
+      "walk": [
+        "osrm"
+      ]
+    },
+    "geocoder": "nominatim",
+    "tomtom": {
+      "key": "${TOMTOM_API_KEY}",
+      "max_daily_calls": 500
+    },
+    "here": {
+      "key": "${HERE_API_KEY}",
+      "max_daily_calls": 500
+    },
+    "mapbox": {
+      "key": "${MAPBOX_TOKEN}",
+      "max_daily_calls": 500
+    },
+    "google": {
+      "key": "${GOOGLE_MAPS_API_KEY}",
+      "max_daily_calls": 200
+    },
+    "osrm": {
+      "base_url": "https://routing.openstreetmap.de"
+    },
+    "tiles": {
+      "style": "auto",
+      "stadia_key": "${STADIA_API_KEY}"
+    }
+  },
+  "screens": {
+    "weather": {
+      "type": "weather",
+      "location": "home",
+      "blocks": {
+        "warnings": true,
+        "rain_nowcast": true,
+        "uv": true,
+        "pollen": true,
+        "air_quality": true,
+        "sun": true
+      },
+      "pollen_types": [
+        "grass",
+        "birch"
+      ]
+    },
+    "to-work": {
+      "type": "navigation",
+      "from": "home",
+      "to": "work",
+      "modes": [
+        "car"
+      ],
+      "alternatives": {
+        "max": 3,
+        "within": "10m",
+        "within_pct": 20
+      },
+      "arrive_by": "09:00",
+      "forecast": [
+        "+15m",
+        "+30m"
+      ],
+      "delay_threshold": "3m",
+      "map": {
+        "padding": 0.1,
+        "show_alternatives": true
+      },
+      "alert": {
+        "watch": {
+          "every": "week",
+          "days": [
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri"
+          ],
+          "at": "06:30",
+          "until": "08:45",
+          "skip_on": [
+            "holiday",
+            "off"
+          ]
+        },
+        "poll": "15m",
+        "delay_over": "10m"
+      }
+    },
+    "photos": {
+      "type": "gallery",
+      "source": {
+        "kind": "folder",
+        "path": "~/photos",
+        "rescan": "1h"
+      },
+      "order": "shuffle",
+      "fit": "auto",
+      "saturation": 0.6,
+      "caption": "none"
+    },
+    "status": {
+      "type": "status"
+    },
+    "night": {
+      "type": "quiet",
+      "show": "photos",
+      "clean": "before",
+      "clean_cycles": 1
+    }
+  },
+  "schedule": [
+    {
+      "name": "weather-daytime",
+      "when": {
+        "every": "day",
+        "at": "06:00",
+        "until": "22:00",
+        "refresh": "30m"
+      },
+      "screen": "weather"
+    },
+    {
+      "name": "weekday-commute",
+      "when": {
+        "every": "week",
+        "days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "at": "07:15",
+        "until": "08:45",
+        "refresh": "10m",
+        "skip_on": [
+          "holiday",
+          "off"
+        ]
+      },
+      "screen": "to-work"
+    },
+    {
+      "name": "evening",
+      "when": {
+        "every": "day",
+        "at": "18:00"
+      },
+      "screens": [
+        "weather",
+        "photos"
+      ],
+      "rotate_every": "20m"
+    },
+    {
+      "name": "night",
+      "when": {
+        "every": "day",
+        "at": "23:00"
+      },
+      "screen": "night"
+    }
+  ],
+  "default_screen": "photos",
+  "buttons": {
+    "enabled": true,
+    "pins": {
+      "A": 5,
+      "B": 6,
+      "C": 16,
+      "D": 24
+    },
+    "long_press": "1s",
+    "shutdown_hold": "5s",
+    "legend": false,
+    "map": {
+      "default": {
+        "A": "next_screen",
+        "B": "refresh",
+        "C": "prev_screen",
+        "D": "status",
+        "A_long": "resume_schedule",
+        "B_long": "status",
+        "C_long": "pause_toggle",
+        "D_long": "shutdown"
+      },
+      "gallery": {
+        "B": "next_image",
+        "C": "prev_image",
+        "D": "favourite"
+      },
+      "weather": {
+        "B": "cycle_view",
+        "C": "cycle_location",
+        "D": "refresh"
+      },
+      "navigation": {
+        "B": "next_route",
+        "C": "reverse_route",
+        "D": "next_destination"
+      }
+    }
+  }
+}

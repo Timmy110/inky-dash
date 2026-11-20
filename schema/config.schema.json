@@ -1,0 +1,1434 @@
+{
+  "$defs": {
+    "AlertOpts": {
+      "additionalProperties": false,
+      "properties": {
+        "watch": {
+          "$ref": "#/$defs/When"
+        },
+        "poll": {
+          "default": "15m",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Poll",
+          "type": "string"
+        },
+        "delay_over": {
+          "default": "10m",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Delay Over",
+          "type": "string"
+        },
+        "hysteresis": {
+          "default": "3m",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Hysteresis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "watch"
+      ],
+      "title": "AlertOpts",
+      "type": "object"
+    },
+    "AlternativesOpts": {
+      "additionalProperties": false,
+      "properties": {
+        "max": {
+          "default": 3,
+          "maximum": 6,
+          "minimum": 1,
+          "title": "Max",
+          "type": "integer"
+        },
+        "within": {
+          "default": "10m",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Within",
+          "type": "string"
+        },
+        "within_pct": {
+          "default": 20,
+          "maximum": 200,
+          "minimum": 0,
+          "title": "Within Pct",
+          "type": "number"
+        }
+      },
+      "title": "AlternativesOpts",
+      "type": "object"
+    },
+    "ButtonsConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "pins": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "default": {
+            "A": 5,
+            "B": 6,
+            "C": 16,
+            "D": 24
+          },
+          "propertyNames": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "title": "Pins",
+          "type": "object"
+        },
+        "led_pin": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 13,
+          "title": "Led Pin"
+        },
+        "long_press": {
+          "default": "1s",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Long Press",
+          "type": "string"
+        },
+        "shutdown_hold": {
+          "default": "5s",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Shutdown Hold",
+          "type": "string"
+        },
+        "coalesce": {
+          "default": "2s",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Coalesce",
+          "type": "string"
+        },
+        "legend": {
+          "default": false,
+          "title": "Legend",
+          "type": "boolean"
+        },
+        "map": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "default": {},
+          "title": "Map",
+          "type": "object"
+        }
+      },
+      "title": "ButtonsConfig",
+      "type": "object"
+    },
+    "DisplayConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "orientation": {
+          "default": "landscape",
+          "enum": [
+            "landscape",
+            "portrait"
+          ],
+          "title": "Orientation",
+          "type": "string"
+        },
+        "flip": {
+          "default": false,
+          "title": "Flip",
+          "type": "boolean"
+        },
+        "refresh_speed": {
+          "default": "normal",
+          "enum": [
+            "normal",
+            "medium",
+            "fast"
+          ],
+          "title": "Refresh Speed",
+          "type": "string"
+        },
+        "min_refresh_interval": {
+          "default": "3m",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Min Refresh Interval",
+          "type": "string"
+        },
+        "border": {
+          "default": "white",
+          "enum": [
+            "white",
+            "black"
+          ],
+          "title": "Border",
+          "type": "string"
+        }
+      },
+      "title": "DisplayConfig",
+      "type": "object"
+    },
+    "FolderSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "folder",
+          "default": "folder",
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "rescan": {
+          "default": "1h",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Rescan",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "FolderSpec",
+      "type": "object"
+    },
+    "GalleryOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "gallery",
+          "default": "gallery",
+          "title": "Type",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/FolderSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "sources": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/FolderSpec"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sources"
+        },
+        "order": {
+          "default": "shuffle",
+          "enum": [
+            "shuffle",
+            "sequential",
+            "random",
+            "on_this_day",
+            "favourites"
+          ],
+          "title": "Order",
+          "type": "string"
+        },
+        "fit": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "cover",
+            "contain"
+          ],
+          "title": "Fit",
+          "type": "string"
+        },
+        "saturation": {
+          "default": 0.6,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Saturation",
+          "type": "number"
+        },
+        "enhance": {
+          "default": true,
+          "title": "Enhance",
+          "type": "boolean"
+        },
+        "caption": {
+          "default": "none",
+          "enum": [
+            "none",
+            "filename",
+            "date",
+            "sidecar",
+            "auto"
+          ],
+          "title": "Caption",
+          "type": "string"
+        },
+        "background": {
+          "default": "white",
+          "enum": [
+            "white",
+            "black"
+          ],
+          "title": "Background",
+          "type": "string"
+        }
+      },
+      "title": "GalleryOptions",
+      "type": "object"
+    },
+    "HolidaysConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Country"
+        },
+        "subdiv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subdiv"
+        }
+      },
+      "title": "HolidaysConfig",
+      "type": "object"
+    },
+    "KeyedProvider": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Key"
+        },
+        "max_daily_calls": {
+          "default": 500,
+          "title": "Max Daily Calls",
+          "type": "integer"
+        },
+        "base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Url"
+        }
+      },
+      "title": "KeyedProvider",
+      "type": "object"
+    },
+    "LocaleConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "units": {
+          "default": "metric",
+          "enum": [
+            "metric",
+            "imperial"
+          ],
+          "title": "Units",
+          "type": "string"
+        },
+        "time_format": {
+          "default": "24h",
+          "enum": [
+            "24h",
+            "12h"
+          ],
+          "title": "Time Format",
+          "type": "string"
+        }
+      },
+      "title": "LocaleConfig",
+      "type": "object"
+    },
+    "Location": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "anyOf": [
+            {
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lat"
+        },
+        "lon": {
+          "anyOf": [
+            {
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lon"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        }
+      },
+      "title": "Location",
+      "type": "object"
+    },
+    "MapOpts": {
+      "additionalProperties": false,
+      "properties": {
+        "padding": {
+          "default": 0.1,
+          "maximum": 0.4,
+          "minimum": 0,
+          "title": "Padding",
+          "type": "number"
+        },
+        "show_alternatives": {
+          "default": true,
+          "title": "Show Alternatives",
+          "type": "boolean"
+        }
+      },
+      "title": "MapOpts",
+      "type": "object"
+    },
+    "NavigationOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "navigation",
+          "default": "navigation",
+          "title": "Type",
+          "type": "string"
+        },
+        "from": {
+          "title": "From",
+          "type": "string"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "To"
+        },
+        "modes": {
+          "default": [
+            "car"
+          ],
+          "items": {
+            "enum": [
+              "car",
+              "bike",
+              "walk",
+              "transit"
+            ],
+            "type": "string"
+          },
+          "title": "Modes",
+          "type": "array"
+        },
+        "alternatives": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AlternativesOpts"
+            },
+            {
+              "const": false,
+              "type": "boolean"
+            }
+          ],
+          "default": {
+            "max": 3,
+            "within": "10m",
+            "within_pct": 20.0
+          },
+          "title": "Alternatives"
+        },
+        "arrive_by": {
+          "anyOf": [
+            {
+              "examples": [
+                "07:15"
+              ],
+              "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arrive By"
+        },
+        "depart_at": {
+          "anyOf": [
+            {
+              "examples": [
+                "07:15"
+              ],
+              "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Depart At"
+        },
+        "forecast": {
+          "default": [
+            "+15m",
+            "+30m"
+          ],
+          "items": {
+            "examples": [
+              "+15m"
+            ],
+            "pattern": "^\\+\\d+[smhd]$",
+            "type": "string"
+          },
+          "title": "Forecast",
+          "type": "array"
+        },
+        "delay_threshold": {
+          "default": "3m",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Delay Threshold",
+          "type": "string"
+        },
+        "map": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MapOpts"
+            },
+            {
+              "const": false,
+              "type": "boolean"
+            }
+          ],
+          "default": {
+            "padding": 0.1,
+            "show_alternatives": true
+          },
+          "title": "Map"
+        },
+        "alert": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AlertOpts"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "route_names": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "title": "Route Names",
+          "type": "object"
+        },
+        "cache_for": {
+          "default": "4m",
+          "examples": [
+            "10m",
+            "1h"
+          ],
+          "pattern": "^\\d+[smhd]$",
+          "title": "Cache For",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "title": "NavigationOptions",
+      "type": "object"
+    },
+    "OsrmConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "default": "https://routing.openstreetmap.de",
+          "title": "Base Url",
+          "type": "string"
+        },
+        "max_daily_calls": {
+          "default": 500,
+          "title": "Max Daily Calls",
+          "type": "integer"
+        }
+      },
+      "title": "OsrmConfig",
+      "type": "object"
+    },
+    "ProvidersConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "routing": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "default": {
+            "car": [
+              "tomtom",
+              "here",
+              "mapbox",
+              "google",
+              "osrm"
+            ],
+            "bike": [
+              "osrm"
+            ],
+            "walk": [
+              "osrm"
+            ]
+          },
+          "propertyNames": {
+            "enum": [
+              "car",
+              "bike",
+              "walk",
+              "transit"
+            ]
+          },
+          "title": "Routing",
+          "type": "object"
+        },
+        "geocoder": {
+          "default": "nominatim",
+          "enum": [
+            "nominatim",
+            "tomtom",
+            "here",
+            "mapbox"
+          ],
+          "title": "Geocoder",
+          "type": "string"
+        },
+        "tomtom": {
+          "$ref": "#/$defs/KeyedProvider",
+          "default": {
+            "key": null,
+            "max_daily_calls": 500,
+            "base_url": null
+          }
+        },
+        "here": {
+          "$ref": "#/$defs/KeyedProvider",
+          "default": {
+            "key": null,
+            "max_daily_calls": 500,
+            "base_url": null
+          }
+        },
+        "mapbox": {
+          "$ref": "#/$defs/KeyedProvider",
+          "default": {
+            "key": null,
+            "max_daily_calls": 500,
+            "base_url": null
+          }
+        },
+        "google": {
+          "$ref": "#/$defs/KeyedProvider",
+          "default": {
+            "key": null,
+            "max_daily_calls": 200,
+            "base_url": null
+          }
+        },
+        "ors": {
+          "$ref": "#/$defs/KeyedProvider",
+          "default": {
+            "key": null,
+            "max_daily_calls": 500,
+            "base_url": null
+          }
+        },
+        "osrm": {
+          "$ref": "#/$defs/OsrmConfig",
+          "default": {
+            "base_url": "https://routing.openstreetmap.de",
+            "max_daily_calls": 500
+          }
+        },
+        "tiles": {
+          "$ref": "#/$defs/TilesConfig",
+          "default": {
+            "style": "auto",
+            "stadia_key": null,
+            "threshold": null
+          }
+        }
+      },
+      "title": "ProvidersConfig",
+      "type": "object"
+    },
+    "QuietOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "quiet",
+          "default": "quiet",
+          "title": "Type",
+          "type": "string"
+        },
+        "show": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Show"
+        },
+        "clean": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "before",
+              "type": "string"
+            }
+          ],
+          "default": "before",
+          "title": "Clean"
+        },
+        "clean_cycles": {
+          "default": 1,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Clean Cycles",
+          "type": "integer"
+        }
+      },
+      "title": "QuietOptions",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "when": {
+          "$ref": "#/$defs/When"
+        },
+        "screen": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screen"
+        },
+        "screens": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screens"
+        },
+        "rotate_every": {
+          "anyOf": [
+            {
+              "examples": [
+                "10m",
+                "1h"
+              ],
+              "pattern": "^\\d+[smhd]$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rotate Every"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "when"
+      ],
+      "title": "Rule",
+      "type": "object"
+    },
+    "StatusOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "status",
+          "default": "status",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "StatusOptions",
+      "type": "object"
+    },
+    "TilesConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "style": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "stadia-toner",
+            "stadia-toner-lite",
+            "osm",
+            "none"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "stadia_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stadia Key"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "maximum": 254,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold"
+        }
+      },
+      "title": "TilesConfig",
+      "type": "object"
+    },
+    "WeatherOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "weather",
+          "default": "weather",
+          "title": "Type",
+          "type": "string"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Location"
+        },
+        "blocks": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Blocks",
+          "type": "object"
+        },
+        "uv_threshold": {
+          "default": 6,
+          "title": "Uv Threshold",
+          "type": "number"
+        },
+        "pollen_types": {
+          "default": [
+            "grass",
+            "birch"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Pollen Types",
+          "type": "array"
+        },
+        "warnings_country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Warnings Country"
+        },
+        "warnings_region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Warnings Region"
+        },
+        "view": {
+          "default": "overview",
+          "enum": [
+            "overview",
+            "hourly",
+            "daily"
+          ],
+          "title": "View",
+          "type": "string"
+        },
+        "refresh_data": {
+          "default": 15,
+          "description": "minutes to cache the forecast",
+          "minimum": 5,
+          "title": "Refresh Data",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "location"
+      ],
+      "title": "WeatherOptions",
+      "type": "object"
+    },
+    "When": {
+      "additionalProperties": false,
+      "properties": {
+        "every": {
+          "enum": [
+            "day",
+            "week",
+            "month"
+          ],
+          "title": "Every",
+          "type": "string"
+        },
+        "at": {
+          "anyOf": [
+            {
+              "examples": [
+                "07:15"
+              ],
+              "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+              "type": "string"
+            },
+            {
+              "items": {
+                "examples": [
+                  "07:15"
+                ],
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "At"
+        },
+        "days": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "mon",
+                  "tue",
+                  "wed",
+                  "thu",
+                  "fri",
+                  "sat",
+                  "sun"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Days"
+        },
+        "day": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Day"
+        },
+        "until": {
+          "anyOf": [
+            {
+              "examples": [
+                "07:15"
+              ],
+              "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Until"
+        },
+        "refresh": {
+          "anyOf": [
+            {
+              "examples": [
+                "10m",
+                "1h"
+              ],
+              "pattern": "^\\d+[smhd]$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Refresh"
+        },
+        "skip_on": {
+          "default": [],
+          "items": {
+            "enum": [
+              "holiday",
+              "off"
+            ],
+            "type": "string"
+          },
+          "title": "Skip On",
+          "type": "array"
+        },
+        "only_on": {
+          "default": [],
+          "items": {
+            "enum": [
+              "holiday",
+              "off"
+            ],
+            "type": "string"
+          },
+          "title": "Only On",
+          "type": "array"
+        }
+      },
+      "required": [
+        "every",
+        "at"
+      ],
+      "title": "When",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "timezone": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Timezone"
+    },
+    "display": {
+      "$ref": "#/$defs/DisplayConfig",
+      "default": {
+        "orientation": "landscape",
+        "flip": false,
+        "refresh_speed": "normal",
+        "min_refresh_interval": "3m",
+        "border": "white"
+      }
+    },
+    "locale": {
+      "$ref": "#/$defs/LocaleConfig",
+      "default": {
+        "language": "en",
+        "units": "metric",
+        "time_format": "24h"
+      }
+    },
+    "holidays": {
+      "$ref": "#/$defs/HolidaysConfig",
+      "default": {
+        "country": null,
+        "subdiv": null
+      }
+    },
+    "off_days": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Off Days",
+      "type": "array"
+    },
+    "locations": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Location"
+      },
+      "default": {},
+      "title": "Locations",
+      "type": "object"
+    },
+    "providers": {
+      "$ref": "#/$defs/ProvidersConfig",
+      "default": {
+        "routing": {
+          "bike": [
+            "osrm"
+          ],
+          "car": [
+            "tomtom",
+            "here",
+            "mapbox",
+            "google",
+            "osrm"
+          ],
+          "walk": [
+            "osrm"
+          ]
+        },
+        "geocoder": "nominatim",
+        "tomtom": {
+          "base_url": null,
+          "key": null,
+          "max_daily_calls": 500
+        },
+        "here": {
+          "base_url": null,
+          "key": null,
+          "max_daily_calls": 500
+        },
+        "mapbox": {
+          "base_url": null,
+          "key": null,
+          "max_daily_calls": 500
+        },
+        "google": {
+          "base_url": null,
+          "key": null,
+          "max_daily_calls": 200
+        },
+        "ors": {
+          "base_url": null,
+          "key": null,
+          "max_daily_calls": 500
+        },
+        "osrm": {
+          "base_url": "https://routing.openstreetmap.de",
+          "max_daily_calls": 500
+        },
+        "tiles": {
+          "stadia_key": null,
+          "style": "auto",
+          "threshold": null
+        }
+      }
+    },
+    "screens": {
+      "additionalProperties": {
+        "discriminator": {
+          "mapping": {
+            "gallery": "#/$defs/GalleryOptions",
+            "navigation": "#/$defs/NavigationOptions",
+            "quiet": "#/$defs/QuietOptions",
+            "status": "#/$defs/StatusOptions",
+            "weather": "#/$defs/WeatherOptions"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/WeatherOptions"
+          },
+          {
+            "$ref": "#/$defs/GalleryOptions"
+          },
+          {
+            "$ref": "#/$defs/NavigationOptions"
+          },
+          {
+            "$ref": "#/$defs/StatusOptions"
+          },
+          {
+            "$ref": "#/$defs/QuietOptions"
+          }
+        ]
+      },
+      "title": "Screens",
+      "type": "object"
+    },
+    "schedule": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Rule"
+      },
+      "title": "Schedule",
+      "type": "array"
+    },
+    "default_screen": {
+      "title": "Default Screen",
+      "type": "string"
+    },
+    "buttons": {
+      "$ref": "#/$defs/ButtonsConfig",
+      "default": {
+        "enabled": true,
+        "pins": {
+          "A": 5,
+          "B": 6,
+          "C": 16,
+          "D": 24
+        },
+        "led_pin": 13,
+        "long_press": "1s",
+        "shutdown_hold": "5s",
+        "coalesce": "2s",
+        "legend": false,
+        "map": {}
+      }
+    }
+  },
+  "required": [
+    "screens",
+    "default_screen"
+  ],
+  "title": "inky-dash config",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

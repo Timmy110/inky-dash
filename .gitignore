@@ -1,0 +1,21 @@
+# Upstream reference material (fetch with scripts/fetch-references.sh)
+reference/
+
+# Runtime
+state/
+out/
+config.json
+config.jsonc
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
