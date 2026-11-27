@@ -72,11 +72,16 @@ class ButtonService:
                         held = t - down.pop(name)
                         self.events.put(Press(name, held, held >= self.long_press_s))
             except Exception:
+                if self._stop.is_set():
+                    break
                 log.exception("button thread error")
                 time.sleep(1)
 
     def stop(self) -> None:
         self._stop.set()
+        thread = getattr(self, "_thread", None)
+        if thread is not None:
+            thread.join(timeout=2.0)   # wait_edge_events times out after 1 s
         if self.request is not None:
             try:
                 self.request.release()
