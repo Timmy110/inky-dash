@@ -27,6 +27,9 @@ def faces(img: Image.Image) -> list[tuple[float, float, float, float]]:
         import numpy as np
     except ImportError:
         return []
+    if not hasattr(cv2, "CascadeClassifier"):   # OpenCV 5+: no Haar cascades, fall back to saliency
+        log.warning("this OpenCV has no CascadeClassifier: face detection off (install opencv-python-headless<5)")
+        return []
     small = img.copy()
     small.thumbnail((900, 900))
     gray = cv2.cvtColor(np.array(small), cv2.COLOR_RGB2GRAY)

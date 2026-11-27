@@ -22,7 +22,8 @@ dependencies = [
 # Only on the Pi: the display driver, GPIO for buttons and the LED.
 inky = ["inky>=2.1", "gpiod>=2.1", "gpiodevice>=0.1", "numpy"]
 # Only on the PC: smart crop for `inky-dash prepare`.
-prepare = ["opencv-python-headless>=4.8", "numpy"]
+# OpenCV 5 dropped CascadeClassifier (the Haar face detector) from the main package.
+prepare = ["opencv-python-headless>=4.8,<5", "numpy"]
 heic = ["pillow-heif"]
 dev = ["pytest>=8", "respx>=0.21", "ruff>=0.5", "numpy"]
 
