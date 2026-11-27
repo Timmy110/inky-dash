@@ -47,8 +47,10 @@ step "Config in $ETC"
 sudo mkdir -p "$ETC"
 sudo chown "$USER_NAME:" "$ETC"
 if [ ! -f "$ETC/config.json" ]; then
-  # absolute $schema so editors find it from /etc
-  sed "s#\"./schema/config.schema.json\"#\"$DEST/schema/config.schema.json\"#" \
+  # absolute $schema so editors find it from /etc; absolute photo folder, because relative
+  # gallery paths resolve against the config's folder (/etc/inky-dash)
+  sed -e "s#\"./schema/config.schema.json\"#\"$DEST/schema/config.schema.json\"#" \
+      -e "s#\"path\": \"photos\"#\"path\": \"$DEST/photos\"#" \
     "$DEST/config.example.json" > "$ETC/config.json"
   echo "created $ETC/config.json from the example: edit it"
 fi
@@ -66,7 +68,7 @@ EOF
 fi
 
 step "Photo folder"
-mkdir -p "$USER_HOME/photos"
+mkdir -p "$DEST/photos"
 
 step "Permissions: GPIO/SPI/I2C groups, passwordless poweroff/reboot/restart"
 sudo usermod -aG gpio,spi,i2c "$USER_NAME"

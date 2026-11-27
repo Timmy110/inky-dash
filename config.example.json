@@ -132,7 +132,7 @@
       "type": "gallery",
       "source": {
         "kind": "folder",
-        "path": "~/photos",
+        "path": "photos",
         "rescan": "1h"
       },
       "order": "shuffle",

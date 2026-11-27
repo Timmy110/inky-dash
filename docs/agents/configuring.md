@@ -68,6 +68,8 @@ Check these before writing an option. Unknown keys are **rejected**: every model
 }
 ```
 
+A relative gallery `path` is relative to the config file's folder, so `"photos"` is the repo's `photos/` folder. `~` is expanded.
+
 Durations are `\d+[smhd]` (`"30m"`, `"1h"`). Times are `"HH:MM"`.
 
 ## Screen types
@@ -76,7 +78,7 @@ Durations are `\d+[smhd]` (`"30m"`, `"1h"`). Times are `"HH:MM"`.
 |---|---|
 | `weather` | `location` (a key, or a list of keys: button C cycles them); `blocks` (`warnings`, `rain_nowcast`, `uv`, `pollen`, `air_quality`, `sun`: `false` hides one); `pollen_types`; `uv_threshold`; `warnings_region` (substring of the MeteoAlarm area, e.g. `"Brussels"`); `view` (`overview`/`hourly`/`daily`) |
 | `navigation` | `from`, `to` (a key or a list of keys); `modes` (`car`/`bike`/`walk`/`transit`); `arrive_by` or `depart_at`; `alternatives` (`{max, within, within_pct}` or `false`); `forecast` (`["+15m","+30m"]`); `delay_threshold`; `map` (`{padding, show_alternatives}` or `false`); `route_names` (rename via-labels); `alert` (see below) |
-| `gallery` | `source` (`{"kind":"folder","path":"~/photos","rescan":"1h"}`) or `sources`; `order` (`shuffle`/`sequential`/`random`/`on_this_day`/`favourites`); `fit` (`auto`/`cover`/`contain`); `saturation` 0–1 (0.6 suits the panel); `caption` (`none`/`filename`/`date`/`sidecar`/`auto`) |
+| `gallery` | `source` (`{"kind":"folder","path":"photos","rescan":"1h"}`) or `sources`; `order` (`shuffle`/`sequential`/`random`/`on_this_day`/`favourites`); `fit` (`auto`/`cover`/`contain`); `saturation` 0–1 (0.6 suits the panel); `caption` (`none`/`filename`/`date`/`sidecar`/`auto`) |
 | `status` | no options |
 | `quiet` | `show` (another screen, rendered once; omit for a blank panel); `clean` (`"before"`/`true`/`false`: anti-ghosting cycle); `clean_cycles` 1–5 |
 

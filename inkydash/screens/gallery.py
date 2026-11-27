@@ -53,6 +53,22 @@ class GalleryOptions(ScreenOptions):
         raw = (self.sources or []) + ([self.source] if self.source is not None else [])
         return [FolderSpec(path=s) if isinstance(s, str) else s for s in raw]
 
+    def resolve_paths(self, base: Path) -> None:
+        """Make relative folder paths relative to `base` (the config file's folder), not the cwd."""
+        def fix(path: str) -> str:
+            p = Path(path).expanduser()
+            return path if p.is_absolute() else str(base / p)
+
+        if isinstance(self.source, str):
+            self.source = fix(self.source)
+        elif self.source is not None:
+            self.source.path = fix(self.source.path)
+        for i, s in enumerate(self.sources or []):
+            if isinstance(s, str):
+                self.sources[i] = fix(s)  # type: ignore[index]
+            else:
+                s.path = fix(s.path)
+
 
 # --------------------------------------------------------------------- selection
 def _sources(ctx: RenderContext, opts: GalleryOptions):

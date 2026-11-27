@@ -102,3 +102,16 @@ def test_navigation_from_alias_round_trips():
     nav = config.screens["to-work"]
     assert nav.from_ == "home"
     assert nav.model_dump(by_alias=True)["from"] == "home"
+
+
+def test_relative_gallery_path_is_relative_to_config_file(tmp_path, monkeypatch):
+    d = config_dict("photos")
+    d["screens"]["more"] = {"type": "gallery", "sources": ["extra", {"kind": "folder", "path": "/abs/pics"}]}
+    (tmp_path / "config.json").write_text(json.dumps(d), encoding="utf-8")
+    monkeypatch.chdir(ROOT)  # the cwd must not matter
+    config, _ = load_config(tmp_path / "config.json")
+    base = tmp_path.resolve()
+    assert config.screens["photos"].specs()[0].path == str(base / "photos")
+    more = [s.path for s in config.screens["more"].specs()]
+    assert more[0] == str(base / "extra")
+    assert more[1].replace("\\", "/").endswith("/abs/pics")

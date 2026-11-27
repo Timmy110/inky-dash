@@ -19,3 +19,7 @@ build/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Your photos (the folder itself is kept)
+photos/*
+!photos/.gitkeep

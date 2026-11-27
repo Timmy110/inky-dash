@@ -29,7 +29,7 @@ inky-dash run --driver file                                    # full loop, writ
 | Project | `~/projects/inky-dash` (a git clone of this repo), venv in `.venv` |
 | Config / keys | `~/projects/inky-dash/config.json`, `~/projects/inky-dash/.env` |
 | State | `/var/lib/inky-dash` under systemd; `./state` when run by hand |
-| Photos | `~/photos` |
+| Photos | `~/projects/inky-dash/photos` (contents git-ignored) |
 | Service | `inky-dash.service`, unit in `/etc/systemd/system/` |
 
 This Pi does **not** use the `/opt/inky-dash` + `/etc/inky-dash` layout that `scripts/install.sh` and the README describe. It uses `~/projects/inky-dash` for code, config and keys. Keep it that way unless the user asks otherwise.
@@ -82,7 +82,6 @@ What was done on this Pi, in order. Each step was needed.
    .venv/bin/pip install -e ".[inky]"
    cp -n config.example.json config.json
    touch .env && chmod 600 .env
-   mkdir -p ~/photos
    ```
 5. **Check**: `INKYDASH_STATE=/tmp/idd .venv/bin/inky-dash doctor` should show SPI, I2C and `display: inky.inky_e673 (800, 480)`.
 6. **Panel test**: `.venv/bin/inky-dash testcard --driver inky`, about 35 s. Ask the user what the panel shows: you can't see it.

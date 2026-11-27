@@ -138,7 +138,7 @@ These apply to every screen. People don't remount the display or switch language
                                        "at": "06:30", "until": "08:45", "skip_on": ["holiday","off"] },
                             "poll": "15m", "delay_over": "10m" } },
     "photos":  { "type": "gallery",
-                 "source": { "kind": "folder", "path": "~/photos" },
+                 "source": { "kind": "folder", "path": "photos" },
                  "order": "shuffle", "fit": "auto", "saturation": 0.6 },
     "night":   { "type": "quiet", "show": "photos", "clean": "before" }
   },
@@ -740,7 +740,7 @@ inky-dash/
   - installs the system packages,
   - clones the repo to `/opt/inky-dash` and creates the venv (aarch64 wheels from PyPI),
   - creates `/etc/inky-dash/config.json` from the example, plus `.env`, and sets `"$schema"` to the absolute path `/opt/inky-dash/schema/config.schema.json` so editor autocompletion works from `/etc`,
-  - creates the photo folder `~/photos` for the user who runs the installer. The service runs as that user, so `scp` uploads need no extra permissions. Paths in the config expand `~`. (Pi OS no longer has a default `pi` user.)  - installs and enables the systemd unit,
+  - creates the photo folder `/opt/inky-dash/photos` (owned by the user who runs the installer) and writes that absolute path into the config. The service runs as that user, so `scp` uploads need no extra permissions. Gallery paths in the config expand `~`, and relative ones are relative to the config file's folder. (Pi OS no longer has a default `pi` user.)  - installs and enables the systemd unit,
   - runs `inky-dash doctor`.
 - **Updates:** `inky-dash update` does `git fetch`, then checks out the latest release tag (or `main` with `--to main`). Then it:
   1. runs `pip install`,

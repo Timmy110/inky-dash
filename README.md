@@ -80,7 +80,7 @@ git clone https://github.com/Timmy110/inky-dash /opt/inky-dash
 /opt/inky-dash/scripts/install.sh
 ```
 
-`install.sh` enables SPI/I2C, creates the venv (editable install), writes `/etc/inky-dash/config.json` and `/etc/inky-dash/.env`, creates `~/photos`, allows passwordless `systemctl poweroff/reboot/restart inky-dash` for the shutdown button and updates, installs the systemd unit and runs `inky-dash doctor`.
+`install.sh` enables SPI/I2C, creates the venv (editable install), writes `/etc/inky-dash/config.json` and `/etc/inky-dash/.env`, creates `/opt/inky-dash/photos`, allows passwordless `systemctl poweroff/reboot/restart inky-dash` for the shutdown button and updates, installs the systemd unit and runs `inky-dash doctor`.
 
 Then, **before any layout work**, judge the real panel with the test card:
 
@@ -113,7 +113,7 @@ Or `inky-dash update` (latest release tag, or `--to main`): it validates your co
 
 ### Editing on the Pi
 
-Don't use VS Code Remote-SSH on the Pi Zero 2 W: its server is too heavy for 512 MB of RAM. Edit the config with `nano` over SSH, or edit it on the PC and copy it over with `scp`. The service picks up a valid change within 30 s; an invalid one shows on the status screen and the old config keeps running. Photos go over `scp` or WinSCP to `~/photos`.
+Don't use VS Code Remote-SSH on the Pi Zero 2 W: its server is too heavy for 512 MB of RAM. Edit the config with `nano` over SSH, or edit it on the PC and copy it over with `scp`. The service picks up a valid change within 30 s; an invalid one shows on the status screen and the old config keeps running. Photos go over `scp` or WinSCP to the project's `photos/` folder. Its contents are git-ignored.
 
 ## Buttons (default)
 

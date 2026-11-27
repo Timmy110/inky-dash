@@ -348,7 +348,13 @@ def load_config(path: str | os.PathLike[str] | None = None) -> tuple[Config, Pat
         data = jsonc.loads(p.read_text(encoding="utf-8"))
     except (OSError, ValueError) as e:
         raise ConfigError(p, [str(e)]) from None
-    return parse_config(data, p), p
+    config = parse_config(data, p)
+    base = p.resolve().parent
+    for opts in config.screens.values():
+        resolve = getattr(opts, "resolve_paths", None)
+        if resolve:
+            resolve(base)
+    return config, p
 
 
 def json_schema() -> dict[str, Any]:
