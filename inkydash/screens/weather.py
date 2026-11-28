@@ -4,17 +4,17 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any, ClassVar, Literal
 
+from PIL import Image
 from pydantic import Field, field_validator
 
 from inkydash.providers.openmeteo import POLLEN_TYPES, AirQuality, Forecast
-from inkydash.render import icons
-from inkydash.render.charts import hourly_strip, quarter_bars
-from inkydash.render.theme import BLACK, BLUE, RED, WHITE, YELLOW, new_canvas
+from inkydash.render import icons, soft
+from inkydash.render.charts import hourly_strip
+from inkydash.render.theme import BLACK, BLUE, RED, WHITE, YELLOW, new_canvas, new_overlay
 from inkydash.render.widgets import Canvas
 from inkydash.screens.base import Action, Frame, RenderContext, ScreenOptions
 
@@ -34,6 +34,8 @@ class WeatherOptions(ScreenOptions):
     warnings_country: str | None = None   # default: holidays.country
     warnings_region: str | None = None    # substring of the MeteoAlarm area name, e.g. "Brussels"
     view: Literal["overview", "hourly", "daily"] = "overview"
+    theme: Literal["auto", "light", "dark"] = Field(
+        "auto", description="overview colours; auto = dark between sunset and sunrise")
     refresh_data: int = Field(15, ge=5, description="minutes to cache the forecast")
 
     @field_validator("blocks")
@@ -152,18 +154,16 @@ class Weather:
             return Frame(img, volatile=[box])
 
         view = ctx.view.get("view") or opts.view
+        if view == "overview":
+            return self._overview(ctx, opts, data, label, loc_key)
         top = 0
         if data.warnings:
             top = self._warning_banner(c, ctx, data.warnings)
         body = (0, top, c.w, c.h - 22)
         if view == "hourly":
             self._view_hourly(c, ctx, data, body, label)
-        elif view == "daily":
-            self._view_daily(c, ctx, data, body, label)
-        elif ctx.landscape:
-            self._overview_landscape(c, ctx, opts, data, body, label)
         else:
-            self._overview_portrait(c, ctx, opts, data, body, label)
+            self._view_daily(c, ctx, data, body, label)
 
         footer = f"{label} · Open-Meteo · {ctx.t('updated')} {ctx.fmt.time(ctx.now)}"
         if data.stale_since:
@@ -195,40 +195,6 @@ class Weather:
         hrs = [h for h in fc.hours if h.time >= start]
         return hrs[:n]
 
-    def _current_block(self, c: Canvas, ctx: RenderContext, fc: Forecast, box: tuple[int, int, int, int],
-                       label: str, icon_size: int) -> None:
-        x0, y0, x1, y1 = box
-        cur = fc.current
-        c.text((x0 + 14, y0 + 10), label, "bold", 20, BLACK)
-        c.text((x0 + 14, y0 + 36), ctx.fmt.date_long(ctx.fmt.local(ctx.now).date()), "ui", 16, BLACK)
-        iy = y0 + 64
-        icons.weather_icon(c, (x0 + 8, iy, x0 + 8 + icon_size, iy + icon_size), cur.code, cur.is_day)
-        tx = x0 + 16 + icon_size
-        temp = ctx.fmt.temp(cur.temp)
-        size = c.fit_size(temp, "num", x1 - tx - 8, 112, 40)
-        c.text((tx, iy + icon_size * 0.5), temp, "num", size, BLACK, anchor="lm")
-        desc = ctx.t(f"wmo.{icons.wmo_kind(cur.code)}")
-        dy = iy + icon_size + 6
-        c.text_fit((x0 + 14, dy), desc, "bold", x1 - x0 - 28, 22, 14, BLACK)
-        c.text_fit((x0 + 14, dy + 28), f"{ctx.t('feels_like')} {ctx.fmt.temp(cur.feels_like)}", "ui",
-                   x1 - x0 - 28, 17, 12, BLACK)
-
-    def _today_block(self, c: Canvas, ctx: RenderContext, fc: Forecast, x: int, y: int, w: int) -> int:
-        d0 = fc.days[0]
-        cur = fc.current
-        rows = [
-            (ctx.t("today"), f"{ctx.fmt.temp(d0.tmax)} / {ctx.fmt.temp(d0.tmin)}"),
-            (ctx.t("rain"), f"{round(d0.precip_prob or 0)}% · {ctx.fmt.precip(d0.precip or 0)}"),
-            (ctx.t("wind"), f"{ctx.fmt.speed(cur.wind)}"
-             + (f" ({ctx.t('gusts')} {ctx.fmt.speed(cur.gusts)})" if cur.gusts and cur.gusts > (cur.wind or 0) + 15
-                else "")),
-        ]
-        for k, v in rows:
-            c.text((x, y), k, "ui", 17, BLACK)
-            c.text_fit((x + 90, y), v, "bold", w - 90, 20, 13, BLACK)
-            y += 30
-        return y
-
     def _relevant_blocks(self, ctx: RenderContext, opts: WeatherOptions, data: Data) -> list[str]:
         fc, air = data.fc, data.air
         assert fc is not None
@@ -250,135 +216,209 @@ class Weather:
             rel.append("sun")
         return sorted(rel, key=opts.priority)
 
-    def _flex(self, c: Canvas, ctx: RenderContext, opts: WeatherOptions, data: Data, name: str,
-              box: tuple[int, int, int, int]) -> None:
+    # ------------------------------------------------------------------ overview
+    def _overview(self, ctx: RenderContext, opts: WeatherOptions, data: Data, label: str, loc_key: str) -> Frame:
+        fc = data.fc
+        assert fc is not None
+        theme = opts.theme if opts.theme != "auto" else ("light" if fc.current.is_day else "dark")
+        lk = soft.look(theme)
+        base = Image.new("RGB", ctx.size, lk.bg)
+        ov_img = new_overlay(ctx.size)
+        ov = Canvas(ov_img, ctx.theme)
+        w, h = ctx.size
+        land = ctx.landscape
+
+        # header: place and date (or the most severe warning)
+        title_y, date_y = (8, 46) if land else (18, 58)
+        ov.text_fit((w / 2, title_y), label, "jost-semibold", w - 140, 32, 18, lk.fg, anchor="ma")
+        if data.warnings:
+            self._warning_pill(ov, ctx, data.warnings, w / 2, date_y + 4, w - 40)
+        else:
+            ov.text((w / 2, date_y), ctx.fmt.date_long(ctx.fmt.local(ctx.now).date()), "jost", 20, lk.fg,
+                    anchor="ma")
+        if data.stale_since:
+            stale = ctx.fmt.time(data.stale_since)
+            sw = ov.width(stale, "jost", 13)
+            ov.warn_mark(w - 10 - sw - 18, 16, 14)
+            ov.text((w - 8, 16), stale, "jost", 13, lk.fg, anchor="rm")
+
+        hours = self._hours(fc, ctx.now, 24)
+        series = ([x.time for x in hours], [x.temp for x in hours], [x.precip_prob for x in hours])
+        if land:
+            self._current(base, ov, ctx, lk, fc, (24, 78, 420, 236), 150)
+            self._stats(base, ov, ctx, opts, data, lk, (430, 76, w - 8, 238), cols=2)
+            soft.hourly_chart(base, ov, (8, 246, w - 8, 352), lk, *series, ctx.fmt.hour, ctx.fmt.temp,
+                              label_every=2)
+            self._day_cards(base, ov, ctx, lk, fc, (8, 362, w - 8, h - 6), 7)
+        else:
+            self._current(base, ov, ctx, lk, fc, (16, 96, w - 16, 276), 170)
+            self._stats(base, ov, ctx, opts, data, lk, (8, 292, w - 8, 440), cols=4)
+            soft.hourly_chart(base, ov, (8, 454, w - 8, 636), lk, *series, ctx.fmt.hour, ctx.fmt.temp,
+                              label_every=3)
+            self._day_cards(base, ov, ctx, lk, fc, (8, 650, w - 8, h - 8), 5)
+        return Frame(base, overlay=ov_img, saturation=0.5,
+                     meta={"location": loc_key, "view": "overview", "theme": theme})
+
+    def _warning_pill(self, c: Canvas, ctx: RenderContext, warnings: list[Any], cx: float, y: int,
+                      max_w: int) -> None:
+        wn = warnings[0]
+        fill = RED if wn.level >= 3 else YELLOW
+        msg = ctx.t("warning." + wn.color) + ": " + wn.event
+        if wn.expires:
+            msg += " " + ctx.t("until") + " " + ctx.fmt.time(wn.expires)
+        if len(warnings) > 1:
+            msg += "  (+" + str(len(warnings) - 1) + ")"
+        size = c.fit_size(msg, "jost-medium", max_w - 24, 16, 11)
+        msg = c.truncate(msg, "jost-medium", size, max_w - 24)
+        tw = c.width(msg, "jost-medium", size)
+        box = (int(cx - tw / 2 - 12), y - 2, int(cx + tw / 2 + 12), y + size + 8)
+        c.rounded(box, r=(box[3] - box[1]) // 2, fill=fill, outline=BLACK)
+        c.text((cx, (box[1] + box[3]) / 2), msg, "jost-medium", size, WHITE if fill == RED else BLACK, anchor="mm")
+
+    def _current(self, base: Image.Image, ov: Canvas, ctx: RenderContext, lk: soft.Look, fc: Forecast,
+                 box: tuple[int, int, int, int], icon: int) -> None:
         x0, y0, x1, y1 = box
+        cur = fc.current
+        iy = y0 + (y1 - y0 - icon) // 2
+        soft.paste(base, soft.weather_sprite(cur.code, cur.is_day, icon, lk), (x0, iy))
+        # big number + small unit, centred in the space right of the icon
+        num = ctx.fmt.temp(cur.temp).rstrip("°")
+        unit = "°F" if ctx.fmt.units == "imperial" else "°C"
+        tx0 = x0 + icon + 12
+        size = ov.fit_size(num, "jost-medium", x1 - tx0 - 60, 104, 48)
+        usize = size // 3
+        nb = ov.d.textbbox((0, 0), num, font=ov.font("jost-medium", size), anchor="ls")
+        ub = ov.d.textbbox((0, 0), unit, font=ov.font("jost", usize), anchor="la")
+        total = (nb[2] - nb[0]) + 6 + (ub[2] - ub[0])
+        cx = (tx0 + x1) / 2
+        baseline = iy + icon * 0.62
+        left = cx - total / 2
+        ov.text((left - nb[0], baseline), num, "jost-medium", size, lk.fg, anchor="ls")
+        ov.text((left + (nb[2] - nb[0]) + 6, baseline + nb[1]), unit, "jost", usize, lk.fg, anchor="la")
+        feels = ctx.t("feels_like") + " " + ctx.fmt.temp(cur.feels_like)
+        ov.text_fit((cx, baseline + 14), feels, "jost", int(x1 - tx0), 21, 13, lk.fg, anchor="ma")
+
+    def _stat_items(self, ctx: RenderContext, opts: WeatherOptions, data: Data) -> list[tuple[str, str, str, str]]:
+        """(icon, label, value, unit) for the grid: up to 8 cells; situational ones replace calmer ones."""
         fc, air = data.fc, data.air
         assert fc is not None
-        draw: dict[str, Callable[[], None]] = {}
+        cur, d0 = fc.current, (fc.days[0] if fc.days else None)
+        fmt = ctx.fmt
 
-        def rain() -> None:
+        def split(s: str) -> tuple[str, str]:
+            v, _, u = s.partition(" ")
+            return v, u
+
+        def tsplit(t: datetime | None) -> tuple[str, str]:
+            if t is None:
+                return "–", ""
+            s = fmt.time(t)
+            return (s[:-2], s[-2:].upper()) if s.endswith(("am", "pm")) else (s, "")
+
+        items: dict[str, tuple[str, str, str, str]] = {}
+        if opts.block_enabled("sun") and d0:
+            items["sunrise"] = ("sunrise", ctx.t("weather.sunrise"), *tsplit(d0.sunrise))
+            items["sunset"] = ("sunset", ctx.t("weather.sunset"), *tsplit(d0.sunset))
+        items["wind"] = ("wind", ctx.t("wind"), *split(fmt.speed(cur.wind)))
+        items["humidity"] = ("humidity", ctx.t("weather.humidity"),
+                             "–" if cur.humidity is None else str(round(cur.humidity)), "%")
+        if cur.pressure is None:
+            pv, pu = "–", ""
+        elif fmt.units == "imperial":
+            pv, pu = f"{cur.pressure * 0.02953:.2f}", "inHg"
+        else:
+            pv, pu = str(round(cur.pressure)), "hPa"
+        items["pressure"] = ("pressure", ctx.t("weather.pressure"), pv, pu)
+        if opts.block_enabled("uv"):
+            uv_max = d0.uv_max if d0 else None
+            if uv_max is not None and uv_max >= opts.uv_threshold:
+                items["uv"] = ("uv", ctx.t("weather.uv_max"), str(round(uv_max)), "")
+            else:
+                now_uv = air.uv_now if air else None
+                items["uv"] = ("uv", ctx.t("weather.uv"), "–" if now_uv is None else str(round(now_uv)), "")
+        if cur.visibility is None:
+            vv, vu = "–", ""
+        else:
+            km = cur.visibility / 1000
+            dist = km / 1.609344 if fmt.units == "imperial" else km
+            vv, vu = (">10" if dist >= 10 else f"{dist:.1f}"), ("mi" if fmt.units == "imperial" else "km")
+        items["visibility"] = ("visibility", ctx.t("weather.visibility"), vv, vu)
+        if opts.block_enabled("air_quality") and air and air.aqi is not None:
+            lvl = AirQuality.aqi_level(air.aqi) or "fair"
+            items["air_quality"] = ("air_quality", ctx.t("air_quality"), str(round(air.aqi)), ctx.t("aqi." + lvl))
+
+        relevant = self._relevant_blocks(ctx, opts, data)
+        if "rain_nowcast" in relevant:
             q = [(t, p) for t, p in fc.quarter if t + timedelta(minutes=15) >= ctx.now][:8]
             wet = [t for t, p in q if p >= 0.1]
-            if wet:
-                start = wet[0]
-                end = next((t for t, p in q if t > start and p < 0.1), None)
-                if start <= ctx.now:
-                    msg = ctx.t("rain.now_until", time=ctx.fmt.time(end)) if end else ctx.t("rain.now")
-                else:
-                    msg = ctx.t("rain.from", time=ctx.fmt.time(start))
-                    if end:
-                        msg += " " + ctx.t("rain.until", time=ctx.fmt.time(end))
+            start = wet[0]
+            end = next((t for t, p in q if t > start and p < 0.1), None)
+            if start > ctx.now:
+                items["pressure"] = ("rain", ctx.t("weather.rain_at"), *tsplit(start))
+            elif end:
+                items["pressure"] = ("rain", ctx.t("weather.dry_at"), *tsplit(end))
             else:
-                msg = ctx.t("rain.none")
-            c.text_fit((x0, y0), msg, "bold", x1 - x0, 18, 12, BLUE)
-            quarter_bars(c, (x0, y0 + 26, x1, y1 - 4), [p for _, p in q], scale_mm=1.5)
+                items["pressure"] = ("rain", ctx.t("rain"), ctx.t("weather.now"), "")
+        if "pollen" in relevant and air:
+            k = max(opts.pollen_types, key=lambda k: AirQuality.pollen_level(k, air.pollen.get(k)))
+            lvl = AirQuality.pollen_level(k, air.pollen.get(k))
+            items["visibility"] = ("pollen", ctx.t("pollen"), ctx.t("pollen." + k).capitalize(), ctx.t(f"level.{lvl}"))
+        order = ("sunrise", "sunset", "wind", "humidity", "pressure", "uv", "visibility", "air_quality")
+        return [items[k] for k in order if k in items]
 
-        def uv() -> None:
-            v = fc.days[0].uv_max or 0
-            level = "extreme" if v >= 11 else "very_high" if v >= 8 else "high" if v >= 6 else "moderate"
-            fill = RED if v >= 8 else YELLOW
-            b = c.badge((x0, y0 + 2), f"UV {round(v)}", fill, WHITE if fill == RED else BLACK, size=18)
-            c.text_fit((b[2] + 10, (b[1] + b[3]) / 2), ctx.t(f"uv.{level}"), "bold", x1 - b[2] - 10, 18, 12,
-                       BLACK, anchor="lm")
+    def _stats(self, base: Image.Image, ov: Canvas, ctx: RenderContext, opts: WeatherOptions, data: Data,
+               lk: soft.Look, box: tuple[int, int, int, int], cols: int) -> None:
+        x0, y0, x1, y1 = box
+        items = self._stat_items(ctx, opts, data)
+        rows = max(1, -(-len(items) // cols))
+        cw, rh = (x1 - x0) / cols, (y1 - y0) / rows
+        isz = int(min(rh - 10, 30 if cols > 2 else 32))
+        uv_warn = ctx.t("weather.uv_max")
+        for i, (icon, label, value, unit) in enumerate(items):
+            cx0, cy0 = x0 + (i % cols) * cw, y0 + (i // cols) * rh
+            mid = cy0 + rh / 2
+            soft.paste(base, soft.stat_sprite(icon, isz, lk), (cx0 + 4, mid - isz / 2))
+            tx0, tx1 = cx0 + isz + 8, cx0 + cw - 2
+            tcx = (tx0 + tx1) / 2
+            ov.text_fit((tcx, mid - 3), label, "jost", int(tx1 - tx0), 13, 10, lk.fg, anchor="ms")
+            vsize, usize = 21, 12
+            while vsize > 12:
+                vw = ov.width(value, "jost-semibold", vsize)
+                uw = ov.width(unit, "jost", usize) + 3 if unit else 0
+                if vw + uw <= tx1 - tx0:
+                    break
+                vsize -= 1
+                if vsize % 2:
+                    usize = max(9, usize - 1)
+            vw = ov.width(value, "jost-semibold", vsize)
+            uw = ov.width(unit, "jost", usize) + 3 if unit else 0
+            left = tcx - (vw + uw) / 2
+            vy = mid + 3 + vsize * 0.78
+            fill = RED if label == uv_warn and lk.fg == BLACK else (YELLOW if label == uv_warn else lk.fg)
+            ov.text((left, vy), value, "jost-semibold", vsize, fill, anchor="ls")
+            if unit:
+                ov.text((left + vw + 3, vy), unit, "jost", usize, lk.fg, anchor="ls")
 
-        def pollen() -> None:
-            assert air
-            parts = []
-            for k in opts.pollen_types:
-                lvl = AirQuality.pollen_level(k, air.pollen.get(k))
-                if lvl:
-                    parts.append(f"{ctx.t('pollen.' + k)} {ctx.t(f'level.{lvl}')}")
-            c.text((x0, y0), ctx.t("pollen"), "ui", 16, BLACK)
-            c.text_fit((x0, y0 + 22), ", ".join(parts), "bold", x1 - x0, 19, 12, BLACK)
-
-        def aq() -> None:
-            assert air
-            v = air.aqi_max_today or air.aqi
-            lvl = AirQuality.aqi_level(v) or "fair"
-            c.text((x0, y0), ctx.t("air_quality"), "ui", 16, BLACK)
-            c.text_fit((x0, y0 + 22), f"{ctx.t('aqi.' + lvl)} (AQI {round(v or 0)})", "bold", x1 - x0, 19, 12,
-                       RED if (v or 0) > 60 else BLACK)
-
-        def sun() -> None:
-            d0 = fc.days[0]
-            if not (d0.sunrise and d0.sunset):
-                return
-            icons._sun(c, x0 + 14, y0 + 18, 9)
-            length = d0.sunset - d0.sunrise
-            hrs, mins = divmod(int(length.total_seconds() // 60), 60)
-            x, cy = x0 + 40, y0 + 18
-            for up, t in ((True, d0.sunrise), (False, d0.sunset)):
-                icons.arrow(c, x + 6, cy, 12, up)
-                b = c.text((x + 16, cy), ctx.fmt.time(t), "bold", 19, BLACK, anchor="lm")
-                x = b[2] + 18
-            if x < x1 - 60:
-                c.text((x, cy), f"{hrs}h{mins:02d}", "ui", 17, BLACK, anchor="lm")
-
-        draw.update(rain_nowcast=rain, uv=uv, pollen=pollen, air_quality=aq, sun=sun)
-        draw[name]()
-
-    def _days_columns(self, c: Canvas, ctx: RenderContext, fc: Forecast, box: tuple[int, int, int, int],
-                      n: int = 5) -> None:
+    def _day_cards(self, base: Image.Image, ov: Canvas, ctx: RenderContext, lk: soft.Look, fc: Forecast,
+                   box: tuple[int, int, int, int], n: int) -> None:
         x0, y0, x1, y1 = box
         days = fc.days[1:n + 1]
         if not days:
             return
-        col = (x1 - x0) / len(days)
-        isz = min(int(col * 0.7), y1 - y0 - 70)
+        gap = 8
+        cw = (x1 - x0 - gap * (n - 1)) / n
+        ch = y1 - y0
+        isz = int(min(cw - 18, ch - 62))
         for i, d in enumerate(days):
-            cx = x0 + col * (i + 0.5)
+            cx0 = x0 + i * (cw + gap)
+            ov.rounded((int(cx0), y0, int(cx0 + cw), y1), r=9, outline=lk.fg, width=1)
+            mid = cx0 + cw / 2
             local = ctx.fmt.local(d.date + timedelta(hours=12)).date()
-            c.text((cx, y0 + 2), ctx.fmt.weekday_short(local), "bold", 16, BLACK, anchor="ma")
-            icons.weather_icon(c, (int(cx - isz / 2), y0 + 24, int(cx + isz / 2), y0 + 24 + isz), d.code)
-            c.text((cx, y1 - 22), ctx.fmt.temp(d.tmax), "bold", 18, BLACK, anchor="mb")
-            c.text((cx, y1 - 2), ctx.fmt.temp(d.tmin), "ui", 15, BLACK, anchor="mb")
-            if i:
-                c.vline(int(x0 + col * i), y0 + 4, y1 - 4, BLACK, 1)
-
-    def _overview_landscape(self, c: Canvas, ctx: RenderContext, opts: WeatherOptions, data: Data,
-                            body: tuple[int, int, int, int], label: str) -> None:
-        fc = data.fc
-        assert fc is not None
-        x0, y0, x1, y1 = body
-        split_y = y0 + int((y1 - y0) * 0.6)
-        self._current_block(c, ctx, fc, (0, y0, 330, split_y), label, 120)
-        c.vline(338, y0 + 10, split_y - 10, BLACK, 2)
-        y = self._today_block(c, ctx, fc, 354, y0 + 14, c.w - 354 - 14)
-        flex = self._relevant_blocks(ctx, opts, data)[:2]
-        slot_h = (split_y - y - 6) // 2
-        for i, name in enumerate(flex):
-            top = y + 6 + i * slot_h
-            c.hline(top - 4, 354, c.w - 14, BLACK, 1)
-            self._flex(c, ctx, opts, data, name, (354, top + 4, c.w - 14, top + slot_h - 2))
-        c.hline(split_y, 0, c.w, BLACK, 2)
-        hrs = self._hours(fc, ctx.now, 12)
-        hourly_strip(c, (10, split_y + 6, 480, y1 - 2), [h.time for h in hrs], [h.temp for h in hrs],
-                     [h.precip_prob for h in hrs], ctx.fmt.hour, ctx.fmt.temp)
-        c.vline(492, split_y + 8, y1 - 6, BLACK, 1)
-        self._days_columns(c, ctx, fc, (500, split_y + 8, c.w - 6, y1 - 4), 5)
-
-    def _overview_portrait(self, c: Canvas, ctx: RenderContext, opts: WeatherOptions, data: Data,
-                           body: tuple[int, int, int, int], label: str) -> None:
-        fc = data.fc
-        assert fc is not None
-        x0, y0, x1, y1 = body
-        self._current_block(c, ctx, fc, (0, y0, c.w, y0 + 250), label, 130)
-        c.hline(y0 + 256, 10, c.w - 10, BLACK, 2)
-        y = self._today_block(c, ctx, fc, 16, y0 + 268, c.w - 32)
-        flex = self._relevant_blocks(ctx, opts, data)[:3]
-        for name in flex:
-            c.hline(y, 16, c.w - 16, BLACK, 1)
-            self._flex(c, ctx, opts, data, name, (16, y + 8, c.w - 16, y + 66))
-            y += 72
-        days_top = y1 - 128
-        y_chart = min(y + 6, days_top - 140)
-        c.hline(y_chart, 0, c.w, BLACK, 2)
-        hrs = self._hours(fc, ctx.now, 12)
-        hourly_strip(c, (10, y_chart + 6, c.w - 10, days_top - 6), [h.time for h in hrs], [h.temp for h in hrs],
-                     [h.precip_prob for h in hrs], ctx.fmt.hour, ctx.fmt.temp)
-        c.hline(days_top, 0, c.w, BLACK, 1)
-        self._days_columns(c, ctx, fc, (6, days_top + 6, c.w - 6, y1 - 4), 5)
+            ov.text((mid, y0 + 6), ctx.fmt.weekday_short(local), "jost-semibold", 18, lk.fg, anchor="ma")
+            iy = y0 + 30 + (ch - 58 - isz) / 2
+            soft.paste(base, soft.weather_sprite(d.code, True, isz, lk), (mid - isz / 2, iy))
+            temps = ctx.fmt.temp(d.tmax) + " / " + ctx.fmt.temp(d.tmin)
+            ov.text_fit((mid, y1 - 8), temps, "jost", int(cw - 8), 16, 11, lk.fg, anchor="ms")
 
     def _view_hourly(self, c: Canvas, ctx: RenderContext, data: Data, body: tuple[int, int, int, int],
                      label: str) -> None:

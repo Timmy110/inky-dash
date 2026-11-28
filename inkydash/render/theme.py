@@ -37,7 +37,14 @@ FONT_FILES = {
     "ui": "AtkinsonHyperlegible-Regular.ttf",
     "bold": "AtkinsonHyperlegible-Bold.ttf",
     "num": "BarlowCondensed-SemiBold.ttf",
+    # Jost (variable, OFL): the geometric face of the weather screen
+    "jost": "Jost-Variable.ttf",
+    "jost-medium": "Jost-Variable.ttf",
+    "jost-semibold": "Jost-Variable.ttf",
+    "jost-light": "Jost-Variable.ttf",
 }
+# Weight axis for variable fonts (kinds not listed use the font's default instance).
+FONT_WEIGHTS = {"jost": 400, "jost-medium": 500, "jost-semibold": 600, "jost-light": 300}
 
 
 def blended_palette(saturation: float) -> list[int]:
@@ -65,9 +72,15 @@ def new_overlay(size: tuple[int, int]) -> Image.Image:
 def font(kind: str, size: int) -> ImageFont.FreeTypeFont:
     path = FONT_DIR / FONT_FILES[kind]
     try:
-        return ImageFont.truetype(str(path), size)
+        f = ImageFont.truetype(str(path), size)
     except OSError:  # fonts missing from a broken install: still render something
         return ImageFont.load_default(size)
+    if kind in FONT_WEIGHTS:
+        try:
+            f.set_variation_by_axes([FONT_WEIGHTS[kind]])
+        except OSError:  # FreeType without variation support: default weight
+            pass
+    return f
 
 
 @dataclass(frozen=True)

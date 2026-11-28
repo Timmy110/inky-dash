@@ -16,7 +16,6 @@
   "paused_hint": "Updates zijn gepauzeerd. Houd C ingedrukt om verder te gaan.",
   "shutdown.title": "Veilig uit te trekken",
   "shutdown.hint": "Stroom eraf en erop om te herstarten",
-
   "status.host": "Host",
   "status.wifi": "Wifi",
   "status.uptime": "Actief",
@@ -32,7 +31,6 @@
   "status.errors": "Problemen",
   "status.showing": "Toont",
   "status.next": "Volgende wissel",
-
   "weather.unavailable": "Weer niet beschikbaar",
   "view.hourly": "komende uren",
   "view.daily": "deze week",
@@ -71,11 +69,9 @@
   "aqi.poor": "slecht",
   "aqi.very_poor": "zeer slecht",
   "aqi.extremely_poor": "extreem slecht",
-
   "gallery.empty": "Geen foto's",
   "gallery.empty_hint": "Kopieer foto's naar {path}",
   "gallery.broken": "Kan deze foto niet tonen",
-
   "nav.via": "via",
   "nav.route": "Route",
   "nav.unavailable": "Route niet beschikbaar",
@@ -96,5 +92,15 @@
   "nav.cat.jam": "File",
   "nav.cat.roadwork": "Wegenwerken",
   "nav.cat.closure": "Afgesloten",
-  "nav.cat.slow": "Traag verkeer"
+  "nav.cat.slow": "Traag verkeer",
+  "weather.dry_at": "Droog om",
+  "weather.humidity": "Vochtigheid",
+  "weather.now": "nu",
+  "weather.pressure": "Luchtdruk",
+  "weather.rain_at": "Regen om",
+  "weather.sunrise": "Zonsopgang",
+  "weather.sunset": "Zonsondergang",
+  "weather.uv": "UV-index",
+  "weather.uv_max": "UV max vandaag",
+  "weather.visibility": "Zicht"
 }

@@ -76,7 +76,7 @@ Durations are `\d+[smhd]` (`"30m"`, `"1h"`). Times are `"HH:MM"`.
 
 | Type | Key options (see the `*Options` class for all of them) |
 |---|---|
-| `weather` | `location` (a key, or a list of keys: button C cycles them); `blocks` (`warnings`, `rain_nowcast`, `uv`, `pollen`, `air_quality`, `sun`: `false` hides one); `pollen_types`; `uv_threshold`; `warnings_region` (substring of the MeteoAlarm area, e.g. `"Brussels"`); `view` (`overview`/`hourly`/`daily`) |
+| `weather` | `location` (a key, or a list of keys: button C cycles them); `blocks` (`warnings`, `rain_nowcast`, `uv`, `pollen`, `air_quality`, `sun`: `false` hides one); `pollen_types`; `uv_threshold`; `warnings_region` (substring of the MeteoAlarm area, e.g. `"Brussels"`); `view` (`overview`/`hourly`/`daily`); `theme` (`auto`/`light`/`dark`; `auto` is dark between sunset and sunrise) |
 | `navigation` | `from`, `to` (a key or a list of keys); `modes` (`car`/`bike`/`walk`/`transit`); `arrive_by` or `depart_at`; `alternatives` (`{max, within, within_pct}` or `false`); `forecast` (`["+15m","+30m"]`); `delay_threshold`; `map` (`{padding, show_alternatives}` or `false`); `route_names` (rename via-labels); `alert` (see below) |
 | `gallery` | `source` (`{"kind":"folder","path":"photos","rescan":"1h"}`) or `sources`; `order` (`shuffle`/`sequential`/`random`/`on_this_day`/`favourites`); `fit` (`auto`/`cover`/`contain`); `saturation` 0–1 (0.6 suits the panel); `caption` (`none`/`filename`/`date`/`sidecar`/`auto`) |
 | `status` | no options |

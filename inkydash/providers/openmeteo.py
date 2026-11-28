@@ -34,6 +34,8 @@ class Current:
     gusts: float | None
     wind_dir: float | None
     humidity: float | None
+    pressure: float | None = None     # hPa, sea level
+    visibility: float | None = None   # metres
 
 
 @dataclass
@@ -102,7 +104,7 @@ def parse_forecast(j: dict) -> Forecast:
             temp=c.get("temperature_2m"), feels_like=c.get("apparent_temperature"),
             code=c.get("weather_code"), is_day=bool(c.get("is_day", 1)),
             wind=c.get("wind_speed_10m"), gusts=c.get("wind_gusts_10m"), wind_dir=c.get("wind_direction_10m"),
-            humidity=c.get("relative_humidity_2m"),
+            humidity=c.get("relative_humidity_2m"), pressure=c.get("pressure_msl"), visibility=c.get("visibility"),
         )
         m = j.get("minutely_15") or {}
         quarter = [(_ts(t), p or 0.0) for t, p in zip(m.get("time", []), m.get("precipitation", []), strict=False)]
@@ -159,12 +161,12 @@ class OpenMeteo:
         params = {
             "latitude": f"{lat:.4f}", "longitude": f"{lon:.4f}", "timezone": "auto", "timeformat": "unixtime",
             "current": "temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,wind_gusts_10m,"
-                       "wind_direction_10m,relative_humidity_2m",
+                       "wind_direction_10m,relative_humidity_2m,pressure_msl,visibility",
             "minutely_15": "precipitation", "forecast_minutely_15": 16,
             "hourly": "temperature_2m,precipitation_probability,precipitation,weather_code,is_day",
             "daily": "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,"
                      "precipitation_sum,sunrise,sunset,uv_index_max,wind_speed_10m_max",
-            "forecast_days": 7, "wind_speed_unit": "kmh",
+            "forecast_days": 8, "wind_speed_unit": "kmh",
         }
         key = f"openmeteo:forecast:{lat:.4f},{lon:.4f}"
         cached = self.cache.get(key, ttl_s, lambda: self.http.get_json(FORECAST_URL, params=params,

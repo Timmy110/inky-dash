@@ -16,7 +16,6 @@
   "paused_hint": "Updates are paused. Long-press C to resume.",
   "shutdown.title": "Safe to unplug",
   "shutdown.hint": "Power-cycle to restart",
-
   "status.host": "Host",
   "status.wifi": "Wi-Fi",
   "status.uptime": "Uptime",
@@ -32,7 +31,6 @@
   "status.errors": "Problems",
   "status.showing": "Showing",
   "status.next": "Next change",
-
   "weather.unavailable": "Weather unavailable",
   "view.hourly": "next hours",
   "view.daily": "this week",
@@ -72,11 +70,9 @@
   "aqi.poor": "poor",
   "aqi.very_poor": "very poor",
   "aqi.extremely_poor": "extremely poor",
-
   "gallery.empty": "No photos",
   "gallery.empty_hint": "Copy photos to {path}",
   "gallery.broken": "Can't show this photo",
-
   "nav.via": "via",
   "nav.route": "Route",
   "nav.unavailable": "Route unavailable",
@@ -97,5 +93,15 @@
   "nav.cat.jam": "Jam",
   "nav.cat.roadwork": "Roadworks",
   "nav.cat.closure": "Closure",
-  "nav.cat.slow": "Slow traffic"
+  "nav.cat.slow": "Slow traffic",
+  "weather.dry_at": "Dry at",
+  "weather.humidity": "Humidity",
+  "weather.now": "now",
+  "weather.pressure": "Pressure",
+  "weather.rain_at": "Rain at",
+  "weather.sunrise": "Sunrise",
+  "weather.sunset": "Sunset",
+  "weather.uv": "UV index",
+  "weather.uv_max": "UV max today",
+  "weather.visibility": "Visibility"
 }

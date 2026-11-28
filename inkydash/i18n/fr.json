@@ -16,7 +16,6 @@
   "paused_hint": "Mises à jour en pause. Appui long sur C pour reprendre.",
   "shutdown.title": "Vous pouvez débrancher",
   "shutdown.hint": "Rebranchez pour redémarrer",
-
   "status.host": "Hôte",
   "status.wifi": "Wi-Fi",
   "status.uptime": "En marche",
@@ -32,7 +31,6 @@
   "status.errors": "Problèmes",
   "status.showing": "Affiche",
   "status.next": "Prochain changement",
-
   "weather.unavailable": "Météo indisponible",
   "view.hourly": "prochaines heures",
   "view.daily": "cette semaine",
@@ -71,11 +69,9 @@
   "aqi.poor": "mauvaise",
   "aqi.very_poor": "très mauvaise",
   "aqi.extremely_poor": "extrêmement mauvaise",
-
   "gallery.empty": "Aucune photo",
   "gallery.empty_hint": "Copiez des photos dans {path}",
   "gallery.broken": "Impossible d'afficher cette photo",
-
   "nav.via": "via",
   "nav.route": "Itinéraire",
   "nav.unavailable": "Itinéraire indisponible",
@@ -96,5 +92,15 @@
   "nav.cat.jam": "Bouchon",
   "nav.cat.roadwork": "Travaux",
   "nav.cat.closure": "Route fermée",
-  "nav.cat.slow": "Trafic lent"
+  "nav.cat.slow": "Trafic lent",
+  "weather.dry_at": "Sec à",
+  "weather.humidity": "Humidité",
+  "weather.now": "maintenant",
+  "weather.pressure": "Pression",
+  "weather.rain_at": "Pluie à",
+  "weather.sunrise": "Lever du soleil",
+  "weather.sunset": "Coucher du soleil",
+  "weather.uv": "Indice UV",
+  "weather.uv_max": "UV max aujourd'hui",
+  "weather.visibility": "Visibilité"
 }

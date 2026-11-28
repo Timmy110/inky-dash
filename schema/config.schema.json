@@ -1088,6 +1088,17 @@
           "title": "View",
           "type": "string"
         },
+        "theme": {
+          "default": "auto",
+          "description": "overview colours; auto = dark between sunset and sunrise",
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ],
+          "title": "Theme",
+          "type": "string"
+        },
         "refresh_data": {
           "default": 15,
           "description": "minutes to cache the forecast",

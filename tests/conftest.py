@@ -98,7 +98,7 @@ def forecast_json(now: datetime = NOW, rain: bool = True) -> dict:
         "utc_offset_seconds": 3600,
         "current": {"time": _ts(now), "temperature_2m": 7.4, "apparent_temperature": 4.1, "weather_code": 61,
                     "is_day": 1, "wind_speed_10m": 18.0, "wind_gusts_10m": 45.0, "wind_direction_10m": 220,
-                    "relative_humidity_2m": 88},
+                    "relative_humidity_2m": 88, "pressure_msl": 1011.6, "visibility": 24140},
         "minutely_15": {"time": [_ts(t) for t in quarters],
                         "precipitation": [0, 0, 0.3, 0.6, 0.4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] if rain else [0] * 16},
         "hourly": {

@@ -108,3 +108,44 @@ def test_quiet_renders_the_wrapped_screen(tmp_path, photos, mock_http):
     a = rs.render("night", NOW, "slot-n")
     b = rs.render("photos", NOW, "slot-n")
     assert a.hash == b.hash
+
+
+@pytest.mark.parametrize("orientation", ["landscape", "portrait"])
+@pytest.mark.parametrize("theme", ["light", "dark"])
+def test_weather_overview_themes(tmp_path, photos, mock_http, orientation, theme):
+    data = config_dict(photos)
+    data["display"] = {"orientation": orientation}
+    data["screens"]["weather"]["theme"] = theme
+    config = parse_config(data)
+    store = StateStore(tmp_path / "state")
+    rs = RenderService(config, Providers(config, store.root), store)
+    r = rs.render("weather", NOW, "s")
+    assert r.frame.meta["theme"] == theme
+    assert r.frame.overlay is not None and r.frame.image.mode == "RGB"
+    assert r.image.mode == "P" and r.image.getextrema()[1] <= 5
+
+
+def test_weather_auto_theme_follows_the_sun(tmp_path, photos, mock_http):
+    from .conftest import forecast_json
+
+    rs = service(tmp_path, photos)
+    assert rs.render("weather", NOW, "s").frame.meta["theme"] == "light"   # fixture: is_day = 1
+    night = forecast_json()
+    night["current"]["is_day"] = 0
+    mock_http.get(url__startswith="https://api.open-meteo.com/v1/forecast").mock(
+        return_value=__import__("httpx").Response(200, json=night))
+    rs2 = service(tmp_path / "b", photos)
+    assert rs2.render("weather", NOW, "s").frame.meta["theme"] == "dark"
+
+
+def test_weather_stats_swap_in_rain_and_pollen(tmp_path, photos, mock_http):
+    from inkydash.screens.weather import Weather
+
+    rs = service(tmp_path, photos)
+    opts, ctx = rs.options("weather"), rs.context("weather", NOW)
+    data = Weather()._load(ctx, opts, "home")
+    icons = [i[0] for i in Weather()._stat_items(ctx, opts, data)]
+    # rain in the next 2 h replaces pressure; moderate grass pollen replaces visibility; UV 6.5 ≥ 6 → "max"
+    assert icons == ["sunrise", "sunset", "wind", "humidity", "rain", "uv", "pollen", "air_quality"]
+    labels = {i[0]: i[1] for i in Weather()._stat_items(ctx, opts, data)}
+    assert labels["uv"] == ctx.t("weather.uv_max")
